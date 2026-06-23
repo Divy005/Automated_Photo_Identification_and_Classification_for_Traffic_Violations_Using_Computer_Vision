@@ -472,13 +472,28 @@ function OutputShowcase() {
                   </div>
                 </div>
               ) : (
-                <img
-                  ref={imgRef}
-                  src="/detection-output.jpg"
-                  alt="Annotated traffic-violation detection output"
-                  onError={() => setErrored(true)}
-                  className="w-full rounded-2xl"
-                />
+                <div className="group relative overflow-hidden rounded-2xl">
+                  <img
+                    ref={imgRef}
+                    src="/detection-output.jpg"
+                    alt="Annotated traffic-violation detection output"
+                    onError={() => setErrored(true)}
+                    className="w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                  />
+                  {/* top status badge */}
+                  <div className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-background/70 px-2 py-1 text-[11px] font-medium text-mono backdrop-blur">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/70" />
+                      <span className="relative inline-flex size-2 rounded-full bg-success" />
+                    </span>
+                    MODEL OUTPUT
+                  </div>
+                  {/* bottom caption */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-4 pb-3 pt-10 text-xs text-white/90">
+                    <ScanText className="size-4 text-primary" />
+                    Vehicles, helmets and number plates detected &amp; annotated automatically
+                  </div>
+                </div>
               )}
             </div>
             {/* corner accents */}
