@@ -44,11 +44,13 @@ function Index() {
       <Sidebar active={tab} onChange={setTab} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar title={meta.title} icon={meta.icon} />
-        <main className="flex-1 px-6 py-6 max-w-[1500px] w-full mx-auto">
-          {tab === "image" && <ImageInference />}
-          {tab === "video" && <VideoInference />}
-          {tab === "analytics" && <Analytics />}
-          {tab === "examples" && <Examples />}
+        <main className="grid-bg flex-1 w-full">
+          <div className="px-6 py-6 max-w-[1500px] w-full mx-auto">
+            {tab === "image" && <ImageInference />}
+            {tab === "video" && <VideoInference />}
+            {tab === "analytics" && <Analytics />}
+            {tab === "examples" && <Examples />}
+          </div>
         </main>
       </div>
     </div>
