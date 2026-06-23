@@ -34,7 +34,7 @@ The system runs 8 sequential stages per image:
 
 1. **Primary detection** — YOLOv8s (COCO) detects persons, motorcycles, cars, trucks.
 2. **Supplemental bike detection** — a custom YOLOv8 detector recovers Indian two-wheelers (scooters, mopeds, three-wheelers) that COCO misses; merged via NMS.
-3. **Extended violations (Roboflow API)** — wrong-way driving + seatbelt segmentation + illegal parking.
+3. **Extended violations (Custom API)** — wrong-way driving + seatbelt segmentation + illegal parking.
 4. **Depth estimation** — Depth-Anything V2 (Small) filters out background pedestrians.
 5. **Person → bike association** — IoU overlap + column alignment + depth proximity.
 6. **Helmet classification** — custom YOLOv11 on each rider's head crop.
@@ -55,7 +55,7 @@ The system runs 8 sequential stages per image:
 
 The largest model is Depth-Anything V2 Small (~24M params) — well within a sub-1B parameter limit.
 
-**Note:** Wrong-side driving, seatbelt detection and illegal parking are served via the Roboflow API, not bundled here. The pipeline degrades gracefully if the API is unavailable — those features default to not detected and helmet, triple-riding and plate recognition continue unaffected.
+**Note:** Wrong-side driving, seatbelt detection and illegal parking are served via external APIs, not bundled here. The pipeline degrades gracefully if those APIs are unavailable — those features default to not detected and helmet, triple-riding and plate recognition continue unaffected.
 
 ## Usage
 

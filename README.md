@@ -41,34 +41,10 @@ The system is designed for real-world Indian road conditions, including licence 
 Here is a live demonstration and example outputs from the system.
 
 ### 🎬 System Walkthrough / Video Detection Demo
-<video src="./public/detection-demo.mp4" controls width="100%"></video>
+![Video Detection Demo](./public/detection-demo.mp4)
 
-### 📸 Frontend Detection Output Page
-![Detection Output](./public/detection-output.jpg)
-
-### 🖼️ Example Detections (from the Examples Tab)
-<table style="width: 100%; border-collapse: collapse;">
-  <tr>
-    <td style="width: 50%; padding: 5px;">
-      <strong>1. Dense Intersection — Helmet Violation</strong><br/>
-      <img src="./public/samples/sample1.jpeg" width="100%"/>
-    </td>
-    <td style="width: 50%; padding: 5px;">
-      <strong>2. Crosswalk Scene — Multiple Helmet Violations</strong><br/>
-      <img src="./public/samples/sample2.jpeg" width="100%"/>
-    </td>
-  </tr>
-  <tr>
-    <td style="width: 50%; padding: 5px;">
-      <strong>3. Urban Road — Dual Helmet Non-compliance</strong><br/>
-      <img src="./public/samples/sample3.jpeg" width="100%"/>
-    </td>
-    <td style="width: 50%; padding: 5px;">
-      <strong>4. Street-level Scene — Triple Riding + Helmet Violations</strong><br/>
-      <img src="./public/samples/sample4.jpeg" width="100%"/>
-    </td>
-  </tr>
-</table>
+### 📸 Sample Detection
+![Sample Detection](./public/detection-output.jpg)
 
 ---
 
