@@ -143,7 +143,9 @@ export function Analytics() {
                   <span className="inline-flex items-center rounded-md border-2 border-foreground/70 bg-foreground/[0.06] px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-mono">
                     {p.plate}
                   </span>
-                  <span className="text-xs text-muted-foreground truncate">{labelForType(p.type)}</span>
+                  <span className="inline-flex items-center rounded-md bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning truncate">
+                    {labelForType(p.type)}
+                  </span>
                   <span className="ml-auto text-[11px] px-2 py-0.5 rounded-md bg-primary/15 text-primary text-mono">
                     {typeof p.confidence === "number" ? `${(p.confidence * 100).toFixed(1)}%` : "—"}
                   </span>

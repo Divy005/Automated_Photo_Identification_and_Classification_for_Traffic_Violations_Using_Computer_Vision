@@ -28,17 +28,21 @@ export function ResultPanel({
     return (Number(b.confidence) || 0) - (Number(a.confidence) || 0);
   });
 
-  // Unique, best-first list of recognised plates for the summary strip.
-  const plateMap = new Map<string, { plate: string; type: string; confidence?: number }>();
+  // Group every violation under its plate so each plate shows the plate number
+  // *and* what it was flagged for (helmet, triple riding, …).
+  const plateMap = new Map<
+    string,
+    { plate: string; violations: { type: string; confidence?: number }[] }
+  >();
   for (const v of violations) {
     const plate = getPlate(v);
-    if (plate && !plateMap.has(plate)) {
-      plateMap.set(plate, {
-        plate,
-        type: String(v.type ?? ""),
-        confidence: typeof v.confidence === "number" ? v.confidence : undefined,
-      });
-    }
+    if (!plate) continue;
+    const entry = plateMap.get(plate) ?? { plate, violations: [] };
+    entry.violations.push({
+      type: String(v.type ?? "violation"),
+      confidence: typeof v.confidence === "number" ? v.confidence : undefined,
+    });
+    plateMap.set(plate, entry);
   }
   const plates = [...plateMap.values()];
 
@@ -93,25 +97,38 @@ export function ResultPanel({
               {plates.map((p, i) => (
                 <div
                   key={p.plate}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-background/50 px-3 py-2"
+                  className="rounded-lg border border-border bg-background/50 px-3 py-2.5"
                 >
-                  {/* Number-plate styled chip */}
-                  <span className="inline-flex items-center rounded-md border-2 border-foreground/70 bg-foreground/[0.06] px-2.5 py-1 text-base font-semibold tracking-[0.12em] text-mono text-foreground">
-                    {p.plate}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium truncate">{labelForType(p.type)}</div>
+                  <div className="flex items-center gap-3">
+                    {/* Number-plate styled chip */}
+                    <span className="inline-flex items-center rounded-md border-2 border-foreground/70 bg-foreground/[0.06] px-2.5 py-1 text-base font-semibold tracking-[0.12em] text-mono text-foreground">
+                      {p.plate}
+                    </span>
                     {i === 0 && (
-                      <div className="text-[10px] uppercase tracking-wider text-success">
+                      <span className="text-[10px] uppercase tracking-wider text-success">
                         Best match
-                      </div>
+                      </span>
                     )}
                   </div>
-                  {typeof p.confidence === "number" && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-primary/15 text-primary text-mono">
-                      {(p.confidence * 100).toFixed(1)}%
+                  {/* Violation type(s) this plate was flagged for */}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Violation
                     </span>
-                  )}
+                    {p.violations.map((vt, j) => (
+                      <span
+                        key={j}
+                        className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning"
+                      >
+                        {labelForType(vt.type)}
+                        {typeof vt.confidence === "number" && (
+                          <span className="text-mono opacity-80">
+                            {(vt.confidence * 100).toFixed(0)}%
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
