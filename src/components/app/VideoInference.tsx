@@ -9,13 +9,14 @@ import {
   type VideoDetectResult,
   type VideoPreview,
 } from "@/lib/api";
+import { recordDetection, getPlate } from "@/lib/history";
 
 const VIDEO_ETA_MS = 5 * 60_000;
 
 // Coordinates are entered relative to the preview frame the backend returns.
-// We provide sensible defaults that work as a starting point for most clips.
-const DEFAULT_LINE = "100,400,900,400";
-const DEFAULT_ROI = "450,80,520,160";
+// Defaults match a typical intersection layout — adjust to your own scene.
+const DEFAULT_LINE = "100,440,900,500";
+const DEFAULT_ROI = "870,120,930,200";
 
 export function VideoInference() {
   const [file, setFile] = useState<File | null>(null);
@@ -53,14 +54,30 @@ export function VideoInference() {
 
   const run = async () => {
     if (!file) return;
+    const detId = newDetectionId("VID");
+    const detTs = new Date().toISOString();
     setError(null);
     setResult(null);
     setRunning(true);
-    setId(newDetectionId("VID"));
-    setTs(new Date().toISOString());
+    setId(detId);
+    setTs(detTs);
     try {
       const r = await detectVideo(file, lineCoords.trim(), roiCoords.trim(), true);
       setResult(r);
+      // Persist to local history so Analytics reflects this run.
+      const vios = extractViolations(r.report);
+      recordDetection({
+        id: detId,
+        timestamp: detTs,
+        source: "video",
+        fileName: file.name,
+        vehicles: 0,
+        violations: vios.map((v) => ({
+          type: String(v.type ?? v.violation ?? v.label ?? "violation"),
+          confidence: typeof v.confidence === "number" ? v.confidence : undefined,
+          plate: getPlate(v) ?? undefined,
+        })),
+      });
     } catch (e: any) {
       setError(e?.message ?? "Video detection failed");
     } finally {
@@ -162,7 +179,7 @@ export function VideoInference() {
               />
               <div className="rounded-md border border-border bg-background/40 p-3 text-xs text-muted-foreground leading-relaxed">
                 Use the grid overlay on the preview frame to read pixel coordinates.
-                Defaults are placeholders — replace them with values matching your scene.
+                Pre-filled defaults match a typical intersection — tweak them to fit your scene.
               </div>
             </div>
           </div>

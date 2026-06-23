@@ -1,18 +1,6 @@
-import { CheckCircle2, AlertTriangle, Clock, Hash } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Clock, Hash, ScanText } from "lucide-react";
 import type { DetectResponse } from "@/lib/api";
-
-const TYPE_LABELS: Record<string, string> = {
-  no_helmet: "Helmet Non-compliance",
-  helmet: "Helmet Detected",
-  triple_riding: "Triple Riding",
-  wrong_side: "Wrong-side Driving",
-  stop_line: "Stop-line Violation",
-  red_light: "Red-light Violation",
-  illegal_parking: "Illegal Parking",
-};
-
-const fmtType = (t: string) =>
-  TYPE_LABELS[t] ?? t.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+import { getPlate, plateQuality, labelForType } from "@/lib/history";
 
 export function ResultPanel({
   detectionId,
@@ -33,7 +21,27 @@ export function ResultPanel({
     );
   }
 
-  const violations = result.violations ?? [];
+  // Sort so the best-detected number plates surface first, then by confidence.
+  const violations = [...(result.violations ?? [])].sort((a, b) => {
+    const pq = plateQuality(b) - plateQuality(a);
+    if (pq !== 0) return pq;
+    return (Number(b.confidence) || 0) - (Number(a.confidence) || 0);
+  });
+
+  // Unique, best-first list of recognised plates for the summary strip.
+  const plateMap = new Map<string, { plate: string; type: string; confidence?: number }>();
+  for (const v of violations) {
+    const plate = getPlate(v);
+    if (plate && !plateMap.has(plate)) {
+      plateMap.set(plate, {
+        plate,
+        type: String(v.type ?? ""),
+        confidence: typeof v.confidence === "number" ? v.confidence : undefined,
+      });
+    }
+  }
+  const plates = [...plateMap.values()];
+
   const annotated =
     annotatedUrl ??
     (result.annotated_image_base64
@@ -71,6 +79,45 @@ export function ResultPanel({
           </div>
         </div>
 
+        {/* Recognised license plates, best read first. */}
+        {plates.length > 0 && (
+          <div className="rounded-xl border border-border bg-card">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+              <ScanText className="size-4 text-primary" />
+              <div className="text-sm font-medium">Recognised Plates</div>
+              <span className="ml-auto text-[11px] px-2 py-0.5 rounded-md bg-primary/15 text-primary text-mono">
+                {plates.length}
+              </span>
+            </div>
+            <div className="p-3 grid gap-2">
+              {plates.map((p, i) => (
+                <div
+                  key={p.plate}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-background/50 px-3 py-2"
+                >
+                  {/* Number-plate styled chip */}
+                  <span className="inline-flex items-center rounded-md border-2 border-foreground/70 bg-foreground/[0.06] px-2.5 py-1 text-base font-semibold tracking-[0.12em] text-mono text-foreground">
+                    {p.plate}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate">{labelForType(p.type)}</div>
+                    {i === 0 && (
+                      <div className="text-[10px] uppercase tracking-wider text-success">
+                        Best match
+                      </div>
+                    )}
+                  </div>
+                  {typeof p.confidence === "number" && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-primary/15 text-primary text-mono">
+                      {(p.confidence * 100).toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="rounded-xl border border-border bg-card">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="text-sm font-medium">Violations</div>
@@ -91,24 +138,30 @@ export function ResultPanel({
                 No violations detected.
               </div>
             ) : (
-              violations.map((v, i) => (
-                <div key={i} className="px-4 py-3 flex items-start gap-3">
-                  <AlertTriangle className="size-4 mt-0.5 text-warning" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">{fmtType(String(v.type))}</div>
-                    {v.plate && (
-                      <div className="text-xs text-muted-foreground text-mono mt-0.5">
-                        Plate · {String(v.plate)}
-                      </div>
+              violations.map((v, i) => {
+                const plate = getPlate(v);
+                return (
+                  <div key={i} className="px-4 py-3 flex items-start gap-3">
+                    <AlertTriangle className="size-4 mt-0.5 text-warning" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium">{labelForType(String(v.type))}</div>
+                      {plate ? (
+                        <div className="mt-1 inline-flex items-center gap-1.5 rounded border border-border bg-background/60 px-1.5 py-0.5 text-xs text-mono tracking-wider">
+                          <ScanText className="size-3 text-primary" />
+                          {plate}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-muted-foreground mt-0.5">No plate read</div>
+                      )}
+                    </div>
+                    {typeof v.confidence === "number" && (
+                      <span className="text-[11px] px-2 py-0.5 rounded-md bg-primary/15 text-primary text-mono">
+                        {(v.confidence * 100).toFixed(1)}%
+                      </span>
                     )}
                   </div>
-                  {typeof v.confidence === "number" && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-primary/15 text-primary text-mono">
-                      {(v.confidence * 100).toFixed(1)}%
-                    </span>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

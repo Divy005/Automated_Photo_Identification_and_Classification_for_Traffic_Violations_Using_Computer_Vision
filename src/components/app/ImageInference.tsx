@@ -4,6 +4,7 @@ import { UploadDropzone } from "./UploadDropzone";
 import { ResultPanel } from "./ResultPanel";
 import { ProgressBar } from "./ProgressBar";
 import { detectImage, newDetectionId, type DetectResponse } from "@/lib/api";
+import { recordImageDetection } from "@/lib/history";
 
 const IMAGE_ETA_MS = 30_000;
 
@@ -24,6 +25,8 @@ export function ImageInference() {
     try {
       const r = await detectImage(file);
       setResult(r);
+      // Persist to local history so Analytics reflects what was uploaded.
+      recordImageDetection(id, r, file.name);
     } catch (e: any) {
       setError(e?.message ?? "Detection failed");
     } finally {
