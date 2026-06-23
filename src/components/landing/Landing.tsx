@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ShieldCheck,
@@ -427,6 +427,14 @@ function DetectionVideo() {
 /** Showcase of a real annotated detection output image. */
 function OutputShowcase() {
   const [errored, setErrored] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // The image may finish (and 404) before React hydrates and attaches onError,
+  // so re-check the load state once on mount.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setErrored(true);
+  }, []);
 
   return (
     <section id="showcase" className="relative overflow-hidden px-5 py-24">
@@ -450,17 +458,24 @@ function OutputShowcase() {
           <div className="relative rounded-3xl bg-gradient-to-br from-primary/40 via-border to-[oklch(0.72_0.16_195/0.4)] p-px shadow-2xl shadow-black/40">
             <div className="rounded-3xl bg-card p-3">
               {errored ? (
-                <div className="grid aspect-[3/2] place-items-center rounded-2xl border border-dashed border-border bg-background/40 text-center text-sm text-muted-foreground">
-                  <div>
-                    <ScanText className="mx-auto mb-2 size-6 text-primary" />
-                    Sample detection output
+                <div className="relative grid aspect-[3/2] place-items-center overflow-hidden rounded-2xl border border-dashed border-border bg-background/40 grid-bg text-center">
+                  <div className="px-6">
+                    <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 ring-1 ring-primary/25">
+                      <ScanText className="size-6 text-primary" />
+                    </div>
+                    <div className="mt-4 text-sm font-medium text-foreground">
+                      Detection output preview
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Vehicles · helmets · number-plate OCR
+                    </div>
                   </div>
                 </div>
               ) : (
                 <img
+                  ref={imgRef}
                   src="/detection-output.jpg"
                   alt="Annotated traffic-violation detection output"
-                  loading="lazy"
                   onError={() => setErrored(true)}
                   className="w-full rounded-2xl"
                 />
