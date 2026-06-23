@@ -1,0 +1,117 @@
+---
+license: mit
+language:
+- en
+tags:
+- computer-vision
+- object-detection
+- traffic-violation
+- yolo
+- paddleocr
+- anpr
+- depth-estimation
+pipeline_tag: object-detection
+---
+
+# Traffic Rule Violation Detection System
+
+An offline, CPU-runnable computer-vision system that detects traffic rule violations from single RGB street-camera images and reads the license plate of every violating vehicle. It is built for Indian road conditions, where dense, unstructured traffic and non-standard vehicle types defeat off-the-shelf detectors.
+
+This repository bundles all model weights used by the pipeline. 
+
+## What it detects
+
+| Vehicle | Violations |
+| :--- | :--- |
+| **Two-wheeler** | Helmet non-compliance, triple-riding, wrong-side driving |
+| **Four-wheeler** | No seatbelt, wrong-side driving, illegal parking |
+
+For every flagged vehicle, the system also extracts the license plate text.
+
+## Pipeline at a glance
+
+The system runs 8 sequential stages per image:
+
+1. **Primary detection** — YOLOv8s (COCO) detects persons, motorcycles, cars, trucks.
+2. **Supplemental bike detection** — a custom YOLOv8 detector recovers Indian two-wheelers (scooters, mopeds, three-wheelers) that COCO misses; merged via NMS.
+3. **Extended violations (Roboflow API)** — wrong-way driving + seatbelt segmentation + illegal parking.
+4. **Depth estimation** — Depth-Anything V2 (Small) filters out background pedestrians.
+5. **Person → bike association** — IoU overlap + column alignment + depth proximity.
+6. **Helmet classification** — custom YOLOv11 on each rider's head crop.
+7. **Plate localisation** — custom YOLO finds the plate within the vehicle crop.
+8. **Plate OCR** — FSRCNN ×3 super-resolution → CLAHE → PaddleOCR (PP-OCRv5 mobile).
+
+## Models in this repository
+
+| File | Model | Role | Size |
+| :--- | :--- | :--- | :--- |
+| `yolov8s.pt` | YOLOv8 Small (COCO) | Primary object detector | 21.5 MB |
+| `stage1_best.pt` | YOLOv8 custom | Indian two-wheeler detector | 21.5 MB |
+| `helmet_v11.pt` | YOLOv11 custom | Helmet / no-helmet classifier | 5.2 MB |
+| `license.pt` | YOLO custom | License-plate localiser | 42.8 MB |
+| `FSRCNN_x3.pb` | FSRCNN ×3 | Plate super-resolution | 0.04 MB |
+| `depth_anything_v2/` | Depth-Anything V2 Small | Monocular depth (pedestrian filtering) | 47.3 MB |
+| `paddleocr/` | PP-OCRv5 mobile set | Plate text detection + recognition | 56.2 MB |
+
+The largest model is Depth-Anything V2 Small (~24M params) — well within a sub-1B parameter limit.
+
+**Note:** Wrong-side driving, seatbelt detection and illegal parking are served via the Roboflow API, not bundled here. The pipeline degrades gracefully if the API is unavailable — those features default to not detected and helmet, triple-riding and plate recognition continue unaffected.
+
+## Usage
+
+The system is exposed as a single class with a stateless per-image interface, and is also hosted as a FastAPI backend for the web application:
+
+```python
+from solution import TrafficViolationDetector
+
+detector = TrafficViolationDetector(model_dir="./models")  # loads all models once
+result = detector.predict("street_image.jpg")              # stateless inference
+```
+
+## Output
+
+```json
+{
+  "violations": [
+    {
+      "type": "motorcycle",
+      "violation_types": [
+        "no_helmet"
+      ],
+      "num_riders": 2,
+      "helmet_violations": 1,
+      "no_seatbelt": 0,
+      "wrong_side": false,
+      "license_plate": "DL 7S AF 8144",
+      "box": [120, 80, 340, 300]
+    }
+  ]
+}
+```
+
+* `violations` is `[]` when no violation is found.
+* `license_plate` is `"UNKNOWN"` when the plate cannot be read.
+* All exceptions are caught; the system returns `{"violations": []}` on failure.
+
+## Key design decisions
+
+* **Two bike detectors.** COCO misses Indian scooters, mopeds and autorickshaws, so a custom detector trained on Indian footage supplements it, merged via NMS.
+* **Depth-based filtering.** Pedestrians on footpaths can horizontally overlap a bike; Depth-Anything V2 excludes anyone whose depth differs from the bike by 35%, preventing false helmet violations.
+* **Two-stage plate pipeline.** A tight YOLO crop (~125×90 px) feeds the mobile PaddleOCR models, avoiding the heavier server OCR model and keeping the bundle under budget.
+* **Conservative rider fallback.** If a bike has no associated person (occlusion, small image), one helmetless rider is assumed — risks a false positive but never misses a genuine violation.
+
+## Performance (local Windows CPU)
+
+| Metric | Value |
+| :--- | :--- |
+| Cold-start model load | ~3–4 s |
+| Simple scene (1–2 bikes) | ~4–5 s / image |
+| Dense scene (8+ bikes) | ~10–12 s / image |
+
+Depth-Anything V2 is the main CPU bottleneck; inference is faster on a Linux server.
+
+---
+
+## Dependencies
+
+`ultralytics` · `transformers` · `paddlepaddle` · `paddleocr` · `inference-sdk` · `opencv-python` · `torch` · `torchvision` · `fastapi` · `uvicorn`
