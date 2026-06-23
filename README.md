@@ -1,4 +1,4 @@
-# 🚦 Gridlock — Automated Traffic Violation Detection
+# 🚦 AgentForgers — Automated Traffic Violation Detection
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -6,7 +6,7 @@
 [![HuggingFace](https://img.shields.io/badge/HuggingFace-Deployed-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/spaces/dv000005/girdlockdeployment)
 [![Status](https://img.shields.io/badge/Status-Live-00C853?style=for-the-badge)](#)
 
-**Gridlock** is an AI-powered, full-stack traffic enforcement dashboard that detects, annotates, and logs traffic violations from uploaded images and video clips. It combines a React web dashboard with a parallelised computer vision inference backend deployed on HuggingFace Spaces.
+**AgentForgers** is an AI-powered, full-stack traffic enforcement dashboard that detects, annotates, and logs traffic violations from uploaded images and video clips. It combines a React web dashboard with a parallelised computer vision inference backend deployed on HuggingFace Spaces.
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## 🌟 1. High-Level Overview
 
-Gridlock is a two-part system:
+AgentForgers is a two-part system:
 
 1. **A React web dashboard** — Users upload traffic images or short video clips. The UI displays annotated evidence, a list of detected violations (including license plate numbers), vehicle counts, processing time, and session-level analytics.
 
@@ -59,7 +59,7 @@ The system is designed for real-world Indian road conditions, including licence 
           │                  │
           ▼                  ▼
 ┌──────────────────┐  ┌──────────────────────────┐
-│  Gridlock API    │  │  Video Detection API     │
+│  AgentForgers API│  │  Video Detection API     │
 │  POST /detect    │  │  POST /api/preview       │
 │  GET  /stats     │  │  POST /api/detect        │
 │  GET  /violations│  │  POST /api/detect/json   │

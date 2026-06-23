@@ -27,7 +27,7 @@ export type DetectResponse = {
   annotated_image_path?: string;
 };
 
-// ── Image (Gridlock) ───────────────────────────────────────────────────────
+// ── Image (AgentForgers) ───────────────────────────────────────────────────
 export async function detectImage(file: File): Promise<DetectResponse> {
   const fd = new FormData();
   fd.append("file", file);
