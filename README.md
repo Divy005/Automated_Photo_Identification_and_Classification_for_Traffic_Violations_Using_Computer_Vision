@@ -1,4 +1,7 @@
-# 🚦 AgentForgers — Automated Traffic Violation Detection
+# 🚦 TrafficAI — Automated Traffic Violation Detection
+
+> Developed by **AgentForgers**:
+> **Sparsh Agrawal**, **Divy Dobariya**, **Devam Juthani**, **Shashank Pai**
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -6,7 +9,7 @@
 [![HuggingFace](https://img.shields.io/badge/HuggingFace-Deployed-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/spaces/dv000005/girdlockdeployment)
 [![Status](https://img.shields.io/badge/Status-Live-00C853?style=for-the-badge)](#)
 
-**AgentForgers** is an AI-powered, full-stack traffic enforcement dashboard that detects, annotates, and logs traffic violations from uploaded images and video clips. It combines a React web dashboard with a parallelised computer vision inference backend deployed on HuggingFace Spaces.
+**TrafficAI** is an AI-powered, full-stack traffic enforcement dashboard that detects, annotates, and logs traffic violations from uploaded images and video clips. It combines a React web dashboard with a parallelised computer vision inference backend deployed on HuggingFace Spaces.
 
 ---
 
@@ -14,6 +17,7 @@
 
 | Resource | Link |
 |---|---|
+| 🌐 Live Dashboard (Deployment) | [https://www.orgaanix.co/](https://www.orgaanix.co/) |
 | 🖥️ Frontend Repository | [Divy005/Automated_Photo_Identification_and_Classification_for_Traffic_Violations_Using_Computer_Vision](https://github.com/Divy005/Automated_Photo_Identification_and_Classification_for_Traffic_Violations_Using_Computer_Vision) |
 | 🤖 Image Detection Backend | [dv000005/girdlockdeployment (HuggingFace Space)](https://huggingface.co/spaces/dv000005/girdlockdeployment) |
 | 🎥 Video Detection Backend | [hiraku12/trafficlinedetector (HuggingFace Space)](https://huggingface.co/spaces/hiraku12-trafficlinedetector) |
@@ -22,7 +26,7 @@
 
 ## 🌟 1. High-Level Overview
 
-AgentForgers is a two-part system:
+TrafficAI is a two-part system:
 
 1. **A React web dashboard** — Users upload traffic images or short video clips. The UI displays annotated evidence, a list of detected violations (including license plate numbers), vehicle counts, processing time, and session-level analytics.
 
@@ -32,15 +36,51 @@ The system is designed for real-world Indian road conditions, including licence 
 
 ---
 
+## 🎥 Media & Detections Showcase
+
+Here is a live demonstration and example outputs from the system.
+
+### 🎬 System Walkthrough / Video Detection Demo
+<video src="./public/detection-demo.mp4" controls width="100%"></video>
+
+### 📸 Frontend Detection Output Page
+![Detection Output](./public/detection-output.jpg)
+
+### 🖼️ Example Detections (from the Examples Tab)
+<table style="width: 100%; border-collapse: collapse;">
+  <tr>
+    <td style="width: 50%; padding: 5px;">
+      <strong>1. Dense Intersection — Helmet Violation</strong><br/>
+      <img src="./public/samples/sample1.jpeg" width="100%"/>
+    </td>
+    <td style="width: 50%; padding: 5px;">
+      <strong>2. Crosswalk Scene — Multiple Helmet Violations</strong><br/>
+      <img src="./public/samples/sample2.jpeg" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td style="width: 50%; padding: 5px;">
+      <strong>3. Urban Road — Dual Helmet Non-compliance</strong><br/>
+      <img src="./public/samples/sample3.jpeg" width="100%"/>
+    </td>
+    <td style="width: 50%; padding: 5px;">
+      <strong>4. Street-level Scene — Triple Riding + Helmet Violations</strong><br/>
+      <img src="./public/samples/sample4.jpeg" width="100%"/>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 🧠 2. Violation Types Detected
 
 | Violation | Detection Method |
 |---|---|
 | 🪖 **No Helmet** | Per-rider head crop → custom YOLOv11 helmet classifier |
 | 👥 **Triple Riding** | Rider count on a detected motorcycle ≥ 3 |
-| ↩️ **Wrong-Side Driving** | IoU match against Roboflow wrong-way detection API |
-| 🚗 **No Seatbelt** | Roboflow seatbelt detection API (per car) |
-| 🅿️ **Illegal Parking** | Roboflow illegal parking detection API |
+| ↩️ **Wrong-Side Driving** | IoU match against custom wrong-way detection API |
+| 🚗 **No Seatbelt** | Custom seatbelt detection API (per car) |
+| 🅿️ **Illegal Parking** | Custom illegal parking detection API |
 | 🚦 **Red-Light / Stop-Line Crossing** | Dedicated video backend with user-defined ROI line |
 
 ---
@@ -78,7 +118,7 @@ The `ParallelDetectionPipeline` (see [`pipeline.py`](https://huggingface.co/spac
 | COCO Object Detection | `YOLOv8s` — detects persons, motorcycles, cars, trucks |
 | Custom Two-Wheeler Detection | `stage1_best.pt` — fine-tuned YOLO for bikes |
 | Depth Estimation | `Depth Anything V2` (via HuggingFace Transformers) |
-| Wrong-Way Driving | Roboflow API |
+| Wrong-Way Driving | Custom API |
 
 **↕ Sync Barrier** — Merge bike boxes (COCO + custom), associate persons → bikes using depth + IoU.
 
