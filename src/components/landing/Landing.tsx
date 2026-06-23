@@ -192,9 +192,9 @@ export function Landing() {
             </div>
           </Reveal>
 
-          {/* Floating detection mockup */}
-          <Reveal delay={150} y={40} className="mx-auto mt-16 max-w-3xl">
-            <DetectionMock />
+          {/* Live detection video */}
+          <Reveal delay={150} y={40} className="mx-auto mt-16 max-w-4xl">
+            <DetectionVideo />
           </Reveal>
         </div>
 
@@ -212,6 +212,9 @@ export function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Real detector output */}
+      <OutputShowcase />
 
       {/* Features */}
       <section id="features" className="px-5 py-24">
@@ -371,79 +374,123 @@ function Stat({
   );
 }
 
-/** Stylised annotated-frame mockup with a scanning line + detection boxes. */
-function DetectionMock() {
+/** Live detection demo video framed in a console-style card. */
+function DetectionVideo() {
   return (
     <div className="relative rounded-2xl border border-border bg-card/70 p-3 shadow-2xl shadow-black/40 backdrop-blur">
+      {/* glow */}
+      <div className="pointer-events-none absolute -inset-px -z-10 rounded-2xl bg-gradient-to-r from-primary/30 via-transparent to-[oklch(0.72_0.16_195/0.3)] blur-md" />
       <div className="flex items-center gap-1.5 px-2 pb-2.5 pt-1">
         <span className="size-2.5 rounded-full bg-destructive/70" />
         <span className="size-2.5 rounded-full bg-warning/70" />
         <span className="size-2.5 rounded-full bg-success/70" />
         <span className="ml-2 text-[11px] text-muted-foreground text-mono">detection · live</span>
       </div>
-      <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-[oklch(0.12_0.01_260)] grid-bg">
-        {/* scanning line */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-x-0 top-0 h-1/3 animate-float bg-gradient-to-b from-primary/25 to-transparent" />
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
+        <video
+          src="/detection-demo.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="h-full w-full object-cover"
+        />
+        {/* LIVE badge */}
+        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-background/70 px-2 py-1 text-[11px] font-medium text-mono backdrop-blur">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive/70" />
+            <span className="relative inline-flex size-2 rounded-full bg-destructive" />
+          </span>
+          LIVE
         </div>
-        {/* fake bounding boxes */}
-        <Box
-          className="left-[12%] top-[22%] h-[42%] w-[26%] border-destructive"
-          label="No Helmet"
-          tone="destructive"
-        />
-        <Box
-          className="right-[14%] top-[34%] h-[34%] w-[28%] border-primary"
-          label="Plate · MH12 AB 1234"
-          tone="primary"
-        />
-        <Box
-          className="left-[44%] top-[58%] h-[24%] w-[18%] border-warning"
-          label="Triple Riding"
-          tone="warning"
-        />
       </div>
       {/* result chips */}
       <div className="flex flex-wrap items-center gap-2 px-1 pt-3">
-        <span className="inline-flex items-center rounded-md border-2 border-foreground/70 bg-foreground/[0.06] px-2 py-0.5 text-xs font-semibold tracking-[0.12em] text-mono">
-          MH12 AB 1234
+        <span className="rounded-md bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
+          Vehicles tracked
         </span>
         <span className="rounded-md bg-destructive/15 px-2 py-0.5 text-[11px] font-medium text-destructive">
-          Helmet Non-compliance
+          Helmet check
         </span>
         <span className="rounded-md bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning">
-          Triple Riding
+          Plate OCR
         </span>
         <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground text-mono">
-          <Bike className="size-3.5" /> 28 ms
+          <Bike className="size-3.5" /> real-time
         </span>
       </div>
     </div>
   );
 }
 
-function Box({
-  className,
-  label,
-  tone,
-}: {
-  className: string;
-  label: string;
-  tone: "primary" | "warning" | "destructive";
-}) {
-  const bg =
-    tone === "primary"
-      ? "bg-primary text-primary-foreground"
-      : tone === "warning"
-        ? "bg-warning text-warning-foreground"
-        : "bg-destructive text-destructive-foreground";
+/** Showcase of a real annotated detection output image. */
+function OutputShowcase() {
+  const [errored, setErrored] = useState(false);
+
   return (
-    <div className={`absolute rounded border-2 ${className}`}>
-      <span
-        className={`absolute -top-[1.15rem] left-0 whitespace-nowrap rounded-sm px-1.5 py-0.5 text-[10px] font-medium ${bg}`}
-      >
-        {label}
-      </span>
-    </div>
+    <section id="showcase" className="relative overflow-hidden px-5 py-24">
+      <div className="blob right-0 top-10 size-[22rem] bg-[oklch(0.72_0.16_195/0.2)]" />
+      <div className="mx-auto max-w-5xl">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+            Real output
+          </div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Annotated detection, straight from the model
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            Every vehicle boxed and classified, helmets checked per rider, and license plates read —
+            exactly what the console returns.
+          </p>
+        </Reveal>
+
+        <Reveal delay={120} y={36} className="mt-12">
+          {/* gradient frame */}
+          <div className="relative rounded-3xl bg-gradient-to-br from-primary/40 via-border to-[oklch(0.72_0.16_195/0.4)] p-px shadow-2xl shadow-black/40">
+            <div className="rounded-3xl bg-card p-3">
+              {errored ? (
+                <div className="grid aspect-[3/2] place-items-center rounded-2xl border border-dashed border-border bg-background/40 text-center text-sm text-muted-foreground">
+                  <div>
+                    <ScanText className="mx-auto mb-2 size-6 text-primary" />
+                    Sample detection output
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src="/detection-output.jpg"
+                  alt="Annotated traffic-violation detection output"
+                  loading="lazy"
+                  onError={() => setErrored(true)}
+                  className="w-full rounded-2xl"
+                />
+              )}
+            </div>
+            {/* corner accents */}
+            <span className="pointer-events-none absolute left-3 top-3 size-5 rounded-tl-lg border-l-2 border-t-2 border-primary/70" />
+            <span className="pointer-events-none absolute right-3 top-3 size-5 rounded-tr-lg border-r-2 border-t-2 border-primary/70" />
+            <span className="pointer-events-none absolute bottom-3 left-3 size-5 rounded-bl-lg border-b-2 border-l-2 border-primary/70" />
+            <span className="pointer-events-none absolute bottom-3 right-3 size-5 rounded-br-lg border-b-2 border-r-2 border-primary/70" />
+          </div>
+        </Reveal>
+
+        {/* stat chips under the image */}
+        <Reveal delay={200} className="mt-6 flex flex-wrap justify-center gap-2.5">
+          {[
+            { label: "Vehicles detected", tone: "primary" },
+            { label: "Per-rider helmet check", tone: "success" },
+            { label: "Number-plate OCR", tone: "warning" },
+            { label: "Violations flagged", tone: "destructive" },
+          ].map((c) => (
+            <span
+              key={c.label}
+              className={`rounded-full border border-border bg-card px-3 py-1 text-xs font-medium ${toneText[c.tone]}`}
+            >
+              {c.label}
+            </span>
+          ))}
+        </Reveal>
+      </div>
+    </section>
   );
 }
