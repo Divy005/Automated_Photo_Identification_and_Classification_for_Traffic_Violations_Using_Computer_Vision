@@ -41,7 +41,7 @@ The system is designed for real-world Indian road conditions, including licence 
 Here is a live demonstration and example outputs from the system.
 
 ### 🎬 System Walkthrough / Video Detection Demo
-![Video Detection Demo](./public/detection-demo.mp4)
+<video src="https://github.com/Divy005/Automated_Photo_Identification_and_Classification_for_Traffic_Violations_Using_Computer_Vision/raw/main/public/detection-demo.mp4" width="100%" controls></video>
 
 ### 📸 Sample Detection
 ![Sample Detection](./public/detection-output.jpg)
